@@ -15,7 +15,7 @@ def encrypt_vigenere(plaintext: str, keyword: str) -> str:
         add1 += 1
     for i in range(len(keyword)):
         if keyword[i].isupper():
-            key = ord(keyword[i]) - 65   # 65-й элемент - A. А - сдвиг на 0.
+            key = ord(keyword[i]) - 65  # 65-й элемент - A. А - сдвиг на 0.
         elif keyword[i].islower():
             key = ord(keyword[i]) - 97  # 97-й элемент - а.
         if plaintext[i].isalpha():
