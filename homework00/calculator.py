@@ -44,4 +44,3 @@ if __name__ == "__main__":
             NUM_1 = float(input("Первое число > "))
             NUM_2 = float(input("Второе число > "))
             print(calc(NUM_1, NUM_2, COMMAND))
-
