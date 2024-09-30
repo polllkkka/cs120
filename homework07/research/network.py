@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 
-from vkapi.friends import get_friends, get_mutual
+from homework07.vkapi.friends import get_friends, get_mutual
 
 
 def ego_network(
@@ -18,7 +18,15 @@ def ego_network(
     :param user_id: Идентификатор пользователя, для которого строится граф друзей.
     :param friends: Идентификаторы друзей, между которыми устанавливаются связи.
     """
-    pass
+    graph = []
+    mutual_list = get_mutual(source_uid=user_id, target_uids=friends)
+    for item in mutual_list:
+        assert isinstance(item, dict)
+        node = item["id"]
+        for friend_id in item["common_friends"]:
+            graph.append((node, friend_id))
+
+    return graph
 
 
 def plot_ego_network(net: tp.List[tp.Tuple[int, int]]) -> None:
@@ -31,6 +39,10 @@ def plot_ego_network(net: tp.List[tp.Tuple[int, int]]) -> None:
 
 
 def plot_communities(net: tp.List[tp.Tuple[int, int]]) -> None:
+    if not net:
+        print("Граф пустой.")
+        return
+
     graph = nx.Graph()
     graph.add_edges_from(net)
     layout = nx.spring_layout(graph)
@@ -41,6 +53,10 @@ def plot_communities(net: tp.List[tp.Tuple[int, int]]) -> None:
 
 
 def get_communities(net: tp.List[tp.Tuple[int, int]]) -> tp.Dict[int, tp.List[int]]:
+    if not net:
+        print("Граф пустой.")
+        return {}
+
     communities = defaultdict(list)
     graph = nx.Graph()
     graph.add_edges_from(net)
@@ -66,3 +82,19 @@ def describe_communities(
                     data.append([cluster_n] + [friend.get(field) for field in fields])  # type: ignore
                     break
     return pd.DataFrame(data=data, columns=["cluster"] + fields)
+
+if __name__ == "__main__":
+    friends_response = get_friends(user_id=570320117, fields=["nickname"])
+    active_users = [
+        user["id"]  # type:ignore
+        for user in friends_response.items
+        if not user.get("deactivated") and not user.get("is_closed")  # type:ignore
+    ]
+    net = ego_network(user_id=570320117, friends=active_users)
+    plot_ego_network(net)
+    plot_communities(net)
+    print(
+        describe_communities(
+            get_communities(net), list(friends_response.items), fields=["first_name", "last_name"]  # type:ignore
+        )  # type:ignore
+    )
