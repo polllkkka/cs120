@@ -5,38 +5,45 @@ from bs4 import BeautifulSoup
 def extract_news(parser):
     """ Extract news from a given web page """
     news_list = []
+    title_lines = list(
+        map(
+            lambda x: x.find("span", {"class": "titleline"}),
+            parser.findAll("tr", {"class": "athing"}),
+        )
+    )
+    sub_lines = parser.findAll("td", {"class": "subtext"})
 
-    try:
-        TRs = parser.body.findAll("table")[3].findAll("tr")
+    for i in range(len(title_lines)):
+        title_line = title_lines[i]
+        sub_line = sub_lines[i]
+        title = title_line.find("a").text
+        author = sub_line.find("a", {"class": "hnuser"}).text
+        url = title_line.find("a")["href"]
+        if comments := sub_line.findAll("a")[-1].text != "discuss":
+            comments = int(comments)
+        else:
+            comments = 0
+        points = sub_line.find("span", {"class": "score"}).text
+        news_list.append(
+            {
+                "title": title,
+                "author": author,
+                "url": url,
+                "comments": comments,
+                "points": points,
+            }
+        )
 
-        for i, tr in enumerate(TRs[:-2]):
-            if i % 3 == 0:
-                news_list.append({})
-                news_list[-1]["title"] = tr.findAll("td")[-1].a.text
-                news_list[-1]["url"] = tr.findAll("td")[-1].a.get("href")
+    return news_list
 
-            if i % 3 == 1:
-                news_list[-1]["author"] = tr.findAll("td")[1].findAll("a")[0].text
-                points_str = tr.findAll("td")[1].findAll("span")[0].text
-                news_list[-1]["points"] = int(points_str[: points_str.find("point") - 1])
-
-                comments_str = tr.findAll("td")[1].findAll("a")[-1].text
-                if "comment" in comments_str:
-                    news_list[-1]["comments"] = int(comments_str[: comments_str.find("comment") - 1])
-                else:
-                    news_list[-1]["comments"] = 0
-
-        return news_list
-    except (IndexError, AttributeError):
-        pass
 
 def extract_next_page(parser):
     """ Extract next page URL """
-    link_tag = parser.body.findAll("table")[2].findAll("tr")[-1].a
-    if link_tag is None:
-        return "front"
-
-    return link_tag.get("href")
+    morelink = parser.find(class_="morelink")
+    if morelink is not None:
+        return morelink["href"]
+    else:
+        return None
 
 
 def get_news(url, n_pages=1):
@@ -52,4 +59,3 @@ def get_news(url, n_pages=1):
         news.extend(news_list)
         n_pages -= 1
     return news
-

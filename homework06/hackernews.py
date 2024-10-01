@@ -1,10 +1,9 @@
 from bottle import (
     route, run, template, request, redirect
 )
-
-from scraputils import extract_news, get_news
+import bayes
+from scraputils import get_news
 from db import News, session
-from bayes import NaiveBayesClassifier
 
 
 @route("/news")
@@ -16,14 +15,14 @@ def news_list():
 
 @route("/add_label/")
 def add_label():
-    news_id = request.query.id
-    label = request.query.label
     s = session()
-    news_item = s.query(News).filter(News.id == news_id).first()
-    if news_item:
-        news_item.label = label
-        s.commit()
-        s.close()
+    id = request.query["id"]
+    label = request.query["label"]
+
+    item = s.query(News).get(id)
+    item.label = label
+    s.commit()
+    if __name__ == "__main__":
         redirect("/news")
 
 
@@ -43,23 +42,18 @@ def update_news():
 @route("/classify")
 def classify_news():
     s = session()
-
-    labeled_news = s.query(News).filter(News.label is not None).all()
-    x_train = [news.title for news in labeled_news]
-    y_train = [news.label for news in labeled_news]
-
-    model = NaiveBayesClassifier(alpha=1.0)
-    model.fit(x_train, y_train)
-
-    unlabeled_news = s.query(News).filter(News.label == None).all()
-    x_test = [news.title for news in unlabeled_news]
-    predictions = model.predict(x_test)
-
-    for news, label in zip(unlabeled_news, predictions):
-        news.label = label
-    s.commit()
-    s.close()
-    redirect("/news")
+    train = s.query(News).filter(News.label != None).all()
+    x = [i.title for i in train]
+    y = [i.label for i in train]
+    model = bayes.NaiveBayesClassifier(0.05)
+    model.fit(x, y)
+    news = s.query(News).filter(News.label == None).all()
+    X = [i.title for i in news]
+    y = model.predict(X)
+    for i in range(len(news)):
+        news[i].label = y[i]
+    a = sorted(news, key=lambda x: x.label)
+    return a
 
 
 @route("/recommendations")
