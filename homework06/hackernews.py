@@ -1,9 +1,7 @@
-from bottle import (
-    route, run, template, request, redirect
-)
 import bayes
-from scraputils import get_news
+from bottle import redirect, request, route, run, template
 from db import News, session
+from scraputils import get_news
 
 
 @route("/news")

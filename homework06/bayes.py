@@ -1,7 +1,8 @@
+import math
 import string
 import typing as tp
 from collections import defaultdict
-import math
+
 import numpy as np
 import pandas as pd  # type: ignore
 
