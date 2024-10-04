@@ -49,3 +49,7 @@ class NaiveBayesClassifier:
         """Returns the mean accuracy on the given test data and labels."""
         results = self.predict(X_test)
         return sum(y_test[x] == results[x] for x in range(len(y_test))) / len(y_test)
+
+    def clean(self, s: str) -> str:
+        translator = str.maketrans("", "", string.punctuation)
+        return s.translate(translator)

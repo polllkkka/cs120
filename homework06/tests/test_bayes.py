@@ -2,9 +2,9 @@ import csv
 import string
 import unittest
 
-from bayes import NaiveBayesClassifier
+from homework06.bayes import NaiveBayesClassifier
 
-PATH_FOR_GIT = "/home/runner/work/cs102/cs102/homework06/data/"
+PATH_FOR_GIT = "C:\\Users\\polin\\cs102\\homework06\\data\\"
 
 
 class TestBayes(unittest.TestCase):
