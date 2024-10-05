@@ -20,11 +20,11 @@ class Session:
     """
 
     def __init__(
-        self,
-        base_url: str,
-        timeout: float = 5.0,
-        max_retries: int = 3,
-        backoff_factor: float = 0.3,
+            self,
+            base_url: str,
+            timeout: float = 5.0,
+            max_retries: int = 3,
+            backoff_factor: float = 0.3,
     ) -> None:
         self._request_session = requests.Session()
 
